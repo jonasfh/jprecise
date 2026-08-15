@@ -39,9 +39,13 @@ RUN mkdir -p ${ANDROID_SDK_ROOT} /tmp && cd /tmp \
 RUN chmod -R a+rw ${ANDROID_SDK_ROOT}
 
 # ---------- Finalize user and working dir (late, so source edits don't bust earlier layers) ----------
-RUN groupadd -g ${USER_GID} devgroup || true \
-    && useradd -m -u ${USER_UID} -g ${USER_GID} -s /bin/bash dev || true \
+# Remove existing user with this UID if it exists (e.g. from base image)
+RUN userdel -r $(getent passwd ${USER_UID} | cut -d: -f1) 2>/dev/null || true
+
+# Create group and user
+RUN groupadd -g ${USER_GID} dev 2>/dev/null || true \
+    && useradd -m -u ${USER_UID} -g ${USER_GID} -s /bin/bash dev 2>/dev/null || true \
     && mkdir -p /workspace && chown -R ${USER_UID}:${USER_GID} /workspace ${ANDROID_SDK_ROOT}
 
-USER ${USER_UID}:${USER_GID}
+USER dev
 WORKDIR /workspace
