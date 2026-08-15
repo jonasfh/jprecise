@@ -1,0 +1,12 @@
+{
+  "name": "JPrecise Dev Container",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/workspace",
+  "settings": {},
+  "extensions": [],
+  "postCreateCommand": "./gradlew --version || true",
+  "remoteUser": "dev"
+}
