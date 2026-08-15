@@ -5,7 +5,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.0'
+        classpath 'com.android.tools.build:gradle:8.4.2'
     }
 }
 
@@ -13,5 +13,16 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+    }
+}
+
+// Force a single Kotlin stdlib version to avoid duplicate-class conflicts
+allprojects {
+    configurations.all {
+        resolutionStrategy.force(
+                'org.jetbrains.kotlin:kotlin-stdlib:1.8.22',
+                'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22',
+                'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+        )
     }
 }

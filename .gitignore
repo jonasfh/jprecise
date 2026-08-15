@@ -1,0 +1,50 @@
+### Android/IntelliJ/Gradle ignores
+# Gradle
+.gradle/
+build/
+/app/build/
+/.gradle/
+
+# Local configuration
+local.properties
+
+# Ignore Android Studio capture files
+captures/
+
+# Kotlin/Java/IDE
+*.iml
+.idea/
+.vscode/
+*.log
+
+# Keystores
+*.keystore
+*.jks
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# NDK/ C++
+.externalNativeBuild/
+.cxx/
+
+# Generated files
+/.idea/workspace.xml
+/.idea/tasks.xml
+/.idea/gradle.xml
+/.idea/dictionaries
+/.idea/libraries
+
+# Devcontainer
+.devcontainer/.cache
+
+# Gradle wrapper
+gradle/wrapper/gradle-wrapper.jar
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+**/build/
+**/out/
+*.iml
