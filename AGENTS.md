@@ -1,6 +1,10 @@
 
 Agents and Contribution Notes for JPrecise
 
+The development container is the canonical development environment.
+Build, test and development commands should be executed inside the
+container whenever possible.
+
 Purpose
 - JPrecise is a technical proof-of-concept (POC) to investigate whether Android can provide a custom, fine-grained volume controller for Bluetooth headphones.
 
