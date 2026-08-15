@@ -35,6 +35,9 @@ RUN mkdir -p ${ANDROID_SDK_ROOT} /tmp && cd /tmp \
     && ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${ANDROID_SDK_ROOT} --install "platform-tools" "platforms;android-36" "build-tools;36.0.0" "build-tools;34.0.0" "cmdline-tools;latest" \
     && rm -rf /tmp/*
 
+# ---------- Install Antigravity cli tool ----------
+RUN curl -fsSL https://antigravity.google/cli/install.sh | bash
+
 # Make SDK directory writable so the non-root user (matching host UID) can use Gradle and SDK tools
 RUN chmod -R a+rw ${ANDROID_SDK_ROOT}
 
