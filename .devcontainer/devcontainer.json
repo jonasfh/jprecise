@@ -4,9 +4,12 @@
     "dockerfile": "Dockerfile",
     "context": ".."
   },
-  "workspaceFolder": "/workspace",
+  "workspaceFolder": "/workspaces/jprecise",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/jprecise,type=bind,consistency=cached",
   "settings": {},
-  "extensions": [],
+  "extensions": [
+    "vscjava.vscode-java-pack"
+  ],
   "postCreateCommand": "./gradlew --version || true",
   "remoteUser": "dev"
 }
