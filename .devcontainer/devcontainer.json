@@ -6,6 +6,9 @@
   },
   "workspaceFolder": "/workspaces/jprecise",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/jprecise,type=bind,consistency=cached",
+  "mounts": [
+    "source=jprecise-gemini-data,target=/home/dev/.gemini,type=volume"
+  ],
   "settings": {},
   "extensions": [
     "vscjava.vscode-java-pack"

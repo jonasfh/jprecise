@@ -48,7 +48,7 @@ RUN userdel -r $(getent passwd ${USER_UID} | cut -d: -f1) 2>/dev/null || true
 # Create group and user
 RUN groupadd -g ${USER_GID} dev 2>/dev/null || true \
     && useradd -m -u ${USER_UID} -g ${USER_GID} -s /bin/bash dev 2>/dev/null || true \
-    && mkdir -p /workspace && chown -R ${USER_UID}:${USER_GID} /workspace ${ANDROID_SDK_ROOT}
+    && mkdir -p /workspace /home/dev/.gemini && chown -R ${USER_UID}:${USER_GID} /workspace /home/dev ${ANDROID_SDK_ROOT}
 
 USER dev
 WORKDIR /workspace
