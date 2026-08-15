@@ -1,62 +1,72 @@
+# Agents and Contribution Guide for JPrecise
 
-Agents and Contribution Notes for JPrecise
+This document is the canonical entry point and rulebook for AI coding assistants (Gemini, Antigravity, etc.) and human contributors working in this repository.
 
-The development container is the canonical development environment.
-Build, test and development commands should be executed inside the
-container whenever possible.
+---
 
-Purpose
-- JPrecise is a technical proof-of-concept (POC) to investigate whether Android can provide a custom, fine-grained volume controller for Bluetooth headphones.
+## 1. Mandatory Agent Workflow & Git Commit Policy
 
-Target hardware and Android version
-- Motorola Edge 50 Pro (XT2403-2)
-- Target device software: Android 16 (API level 36)
+- **Commit Upon Completion:** When a coherent task, fix, or feature is completed and verified, the AI agent **MUST proactively create a Git commit**. Do not leave working, verified changes uncommitted unless explicitly instructed by the user.
+- **Verification Before Commit:** Every commit must be verified:
+  - Run `./gradlew assembleDebug` (and unit tests if applicable) before creating a commit.
+  - Fix any build warnings, compile errors, or lint failures discovered during verification immediately before committing.
+- **Atomic and Relevant Commits:**
+  - Stage only relevant modified/new files (`git add <files>`).
+  - Write concise, descriptive commit messages describing the *what* and *why*.
+- **Devcontainer Environment:** All builds, tests, and CLI operations must run inside the devcontainer.
 
-Motivation
-- Android's native volume steps can be too coarse at very low listening levels. The POC explores finer-grained steps, custom overlays, and non-linear volume curves for extremely quiet listening.
+---
 
-Guidelines
-- This is an experimental POC, not production software.
-- Prefer Java (no Kotlin) and standard Android SDK APIs.
-- Avoid unnecessary dependencies and frameworks; keep the project small and incremental.
-- Verify Android behavior experimentally on target hardware rather than assuming platform behavior.
-- Make small, incremental changes with clear tests or manual verification steps.
+## 2. Project Purpose & Technical Context
 
-Testing and Verification
-- Tests are important throughout the project. Unit tests should be added where appropriate.
-- Integration tests and build/infrastructure verification are especially important during the early POC phase.
-- A configuration should not be considered complete until it has actually been exercised and verified.
-- Prefer small, incremental changes followed by build/test verification.
-- AI agents should fix problems discovered during verification rather than merely reporting them.
+- **Goal:** Technical proof-of-concept (POC) to investigate whether Android can provide a custom, ultra-fine-grained volume controller (especially at very low listening levels for sleep/quiet environments) for both device speakers and Bluetooth headphones.
+- **Target Hardware:** Motorola Edge 50 Pro (XT2403-2)
+- **Target Android Version:** Android 16 (API Level 36)
+- **Primary Language:** Java (no Kotlin) and standard Android SDK APIs. Keep the project lightweight and avoid heavy third-party frameworks.
+- **Exploratory Phase:** Keep work focused on exploration, measurement, and experimentation before designing complex UI or full control architectures.
 
-Development practices
-- Keep the project simple and avoid unnecessary frameworks or dependencies.
-- Use Java and standard Android SDK APIs unless there is a compelling reason otherwise.
-- Verify assumptions on real devices (the target is Android 16 / API 36).
-- Make small, testable commits: commit when a coherent piece of work is completed and verified.
-- Include only relevant files in commits, but make sure all relevant files are committed
+---
 
+## 3. Skills and Customizations
 
-Notes
-- Keep work focused on exploration and measurement; suspend implementing full volume-control logic until experimental behaviors are understood.
+Antigravity and other agent runtimes discover customizations hierarchically in this workspace:
 
-Devcontainer / Dockerfile notes
-- **Purpose:** The devcontainer Dockerfile was reorganized to improve Docker layer caching and speed up incremental rebuilds during development.
-- **Key changes:** stable, expensive steps (system packages, Gradle, Android SDK and platform tools) are now early, cacheable layers; user creation and workspace ownership are done late so source changes do not invalidate heavy layers.
-- **UID/GID alignment:** The Dockerfile accepts `USER_UID` and `USER_GID` build arguments so the `dev` user inside the container can match your host UID/GID to avoid file permission issues when mounting the workspace.
-- **Build example:**
+- **Rules:** `AGENTS.md` and `GEMINI.md` at workspace root define always-active project guidelines.
+- **Skills Directory:** `.agents/skills/<skill-name>/SKILL.md` is used to define specialized runbooks, measurement scripts, or automated workflows.
+- **Adding New Skills:** When defining repeatable multi-step procedures (e.g., automated volume benchmarks, log parsers, ADB test fixtures), create a new skill in `.agents/skills/<skill-name>/SKILL.md`.
 
-	```bash
-	docker build -t jprecise-devcontainer .devcontainer \
-		--build-arg USER_UID=$(id -u) --build-arg USER_GID=$(id -g)
-	```
+---
 
-- **Run example (build inside container):**
+## 4. Testing, Verification & Tooling
 
-	```bash
-	docker run --rm -v "$PWD":/workspace -w /workspace jprecise-devcontainer \
-		bash -lc "./gradlew --no-daemon assembleDebug --stacktrace"
-	```
+- **Canonical Build Command:**
+  ```bash
+  ./gradlew assembleDebug
+  ```
+- **Install on Device via ADB:**
+  ```bash
+  ./gradlew installDebug
+  # or
+  adb install -r app/build/outputs/apk/debug/app-debug.apk
+  ```
+- **Live Logging:**
+  ```bash
+  adb logcat -s JPrecise:V AndroidRuntime:E
+  ```
+- **Fix Verification Issues Immediately:** Never just report a broken build or lint error—diagnose and fix it before reporting back.
 
-- **Rationale:** Keeping SDK and toolchain installation in cacheable layers reduces rebuild time; delaying workspace copy/user setup prevents frequent small changes (source edits) from invalidating the expensive setup layers.
+---
 
+## 5. Devcontainer & Infrastructure Notes
+
+- **Dockerfile Layering:** Heavy setup (Android SDK, platform-tools, Gradle) is cached in early Docker layers. User UID/GID alignment is done at build time.
+- **Host Docker Build:**
+  ```bash
+  docker build -t jprecise-devcontainer .devcontainer \
+      --build-arg USER_UID=$(id -u) --build-arg USER_GID=$(id -g)
+  ```
+- **Headless Build via Docker:**
+  ```bash
+  docker run --rm -v "$PWD":/workspace -w /workspace jprecise-devcontainer \
+      bash -lc "./gradlew --no-daemon assembleDebug --stacktrace"
+  ```

@@ -46,5 +46,8 @@ gradle/wrapper/gradle-wrapper.jar
 /.idea/
 .DS_Store
 **/build/
-**/out/
 *.iml
+
+# Antigravity CLI local session data
+.antigravitycli/
+
