@@ -90,15 +90,39 @@ adb logcat | grep com.jprecise
 
 ---
 
-## 5. Trådløs feilsøking (Valgfritt)
-Dersom du ønsker å feilsøke over Wi-Fi uten USB-kabel:
-1. Sørg for at PC og telefon er på samme Wi-Fi-nettverk.
-2. Gå til **Innstillinger** > **System** > **Utvikleralternativer** > **Trådløs feilsøking** (Wireless debugging) og slå den på.
-3. Velg *"Koble til enhet med parkoblingskode"* og kjør i terminalen:
+## 5. Trådløs feilsøking (Wi-Fi Debugging)
+
+Dersom du ønsker å feilsøke og installere trådløst over Wi-Fi (fra vertsmaskinen):
+
+1. **Sørg for at PC og telefon er på samme Wi-Fi-nettverk.**
+2. **Aktiver trådløs feilsøking på telefonen:**
+   - Gå til **Innstillinger** > **System** > **Utvikleralternativer**.
+   - Slå på **Trådløs feilsøking** (Wireless debugging).
+   - Trykk direkte på selve teksten/linjen *Trådløs feilsøking* for å åpne detaljsiden.
+3. **Parkoble enheten (første gang):**
+   - Trykk på **Koble til enhet med parkoblingskode** (Pair device with pairing code).
+   - Dialogen viser en IP-adresse, en parkoblingsport og en 6-sifret parkoblingskode.
+   - Kjør følgende fra terminalen på vertsmaskinen:
+     ```bash
+     adb pair <IP-ADRESSE>:<PARKOBLINGSPORT> <PARKOBLINGSKODE>
+     # Eksempel:
+     # adb pair 192.168.68.53:39679 913416
+     ```
+4. **Koble til enheten:**
+   - Gå tilbake til hovedsiden for *Trådløs feilsøking* på telefonen. Merk at tilkoblingsporten under *IP-adresse og port* er **forskjellig** fra parkoblingsporten.
+   - Kjør fra terminalen:
+     ```bash
+     adb connect <IP-ADRESSE>:<TILKOBLINGSPORT>
+     # Eksempel:
+     # adb connect 192.168.68.53:41695
+     ```
+5. **Verifiser tilkoblingen:**
    ```bash
-   adb pair <IP-ADRESSE>:<PORT> <PARKOBLINGSKODE>
+   adb devices -l
+   # Viser f.eks: 192.168.68.53:41695 device product:eqe_ge model:motorola_edge_50_pro device:eqe transport_id:1
    ```
-4. Deretter koble til:
+6. **Installere og feilsøke fra host:**
    ```bash
-   adb connect <IP-ADRESSE>:<PORT>
+   adb install -r app/build/outputs/apk/debug/app-debug.apk
+   adb logcat -s JPrecise:V AndroidRuntime:E
    ```
