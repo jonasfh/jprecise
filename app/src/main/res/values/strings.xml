@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">JPrecise</string>
+    <string name="accessibility_service_label">JPrecise Volume Service</string>
+    <string name="accessibility_service_description">Proof-of-concept Accessibility Service to observe and intercept physical volume button events for fine-grained volume control testing.</string>
 </resources>

@@ -77,3 +77,23 @@ Antigravity and other agent runtimes discover customizations hierarchically in t
   docker run --rm -v "$PWD":/workspace -w /workspace jprecise-devcontainer \
       bash -lc "./gradlew --no-daemon assembleDebug --stacktrace"
   ```
+
+---
+
+## 6. Android Volume & AccessibilityService Findings (POC #1)
+
+- **Key Filtering Mechanism:**
+  - `AccessibilityService` requires `android:canRequestFilterKeyEvents="true"` in XML and `AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS` in code.
+  - Key events are delivered to `onKeyEvent(KeyEvent event)` before standard OS processing.
+- **What We Can Observe:**
+  - Physical volume button presses: `KEYCODE_VOLUME_UP` (24), `KEYCODE_VOLUME_DOWN` (25), `KEYCODE_VOLUME_MUTE` (164).
+  - Key action (`ACTION_DOWN`, `ACTION_UP`) and repeat counts (long press detection).
+  - Current audio stream state via `AudioManager` (`STREAM_MUSIC` volume level, min/max bounds, `isMusicActive()`).
+- **What We Can Intercept (Consume):**
+  - Returning `true` from `onKeyEvent()` consumes the key event, preventing Android from displaying the default volume HUD and preventing default volume step increments/decrements.
+  - Returning `false` allows passive observation without blocking system behavior.
+- **Android Platform Limitations & Observations:**
+  - **Permission Requirement:** Accessibility services cannot be granted silently via standard app permissions; the user must explicitly enable the service in Android Accessibility Settings (or via `adb shell settings put secure enabled_accessibility_services ...` during development).
+  - **Screen-Off Behavior:** Accessibility key event filtering is generally throttled or inactive when the screen is locked/off depending on OEM battery optimization and secure lock screen policies.
+  - **Motorola / Android 16 Behavior:** Moto devices running modern Android (API 33+) may mark sideloaded apps as "Restricted Settings" (requiring tapping 3-dots -> "Allow restricted settings" in App Info before enabling accessibility).
+
