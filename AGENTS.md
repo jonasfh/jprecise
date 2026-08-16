@@ -4,8 +4,14 @@ This document is the canonical entry point and rulebook for AI coding assistants
 
 ---
 
-## 1. Mandatory Agent Workflow & Git Commit Policy
+## 1. Mandatory Agent Workflow, GitHub Issues & Git Policy
 
+- **GitHub Issue First:** For all non-trivial changes, create an issue in GitHub (via GitHub MCP / CLI) describing the objective and scope before starting work.
+- **Branching Workflow:**
+  - Never work directly on `main` for non-trivial tasks.
+  - Before creating a branch, ensure `main` is up-to-date with `origin` (`git fetch origin` / fast-forward pull).
+  - Create and switch to a dedicated feature branch named `<issuenr>-<description>`, e.g., `12-volum-slider-ui`.
+  - Standard practice is 1 branch per issue (multiple issues can be addressed in the same branch if closely related or needed).
 - **Commit Upon Completion:** When a coherent task, fix, or feature is completed and verified, the AI agent **MUST proactively create a Git commit**. Do not leave working, verified changes uncommitted unless explicitly instructed by the user.
 - **Verification Before Commit:** Every commit must be verified:
   - Run `./gradlew assembleDebug` (and unit tests if applicable) before creating a commit.
