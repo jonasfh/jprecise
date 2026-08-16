@@ -126,3 +126,46 @@ Dersom du ønsker å feilsøke og installere trådløst over Wi-Fi (fra vertsmas
    adb install -r app/build/outputs/apk/debug/app-debug.apk
    adb logcat -s JPrecise:V AndroidRuntime:E
    ```
+
+---
+
+## 6. Teste Accessibility Service POC (Volumknapp-avskjæring)
+
+Denne POC-en undersøker om vi kan observere og avskjære fysiske volumknapper via Android `AccessibilityService`.
+
+### 1. Aktivere Accessibility Service på telefonen
+- **Metode A (via UI i appen):**
+  1. Åpne appen **JPrecise** på telefonen.
+  2. Trykk på **Open Accessibility Settings**.
+  3. Finn **JPrecise Volume Service** under Nedlastede apper / Tilgjengelighetstjenester og slå den **PÅ**.
+  *(Merk på Android 13/14/15/16: Hvis tjenesten er grået ut pga. "Begrensede innstillinger", gå til App-info for JPrecise > tre prikker øverst til høyre > "Tillat begrensede innstillinger").*
+
+- **Metode B (rask aktivering via ADB):**
+  ```bash
+  adb shell settings put secure enabled_accessibility_services com.jprecise/.VolumeAccessibilityService
+  ```
+
+### 2. Kjøre live-logging
+Kjør logcat filtrert på `JPrecise`:
+```bash
+adb logcat -s JPrecise:V AndroidRuntime:E
+```
+
+### 3. Teste volumknapper
+1. **Passiv observasjon (Consume = OFF):**
+   - Trykk på fysiske volumknapper (opp/ned).
+   - Verifiser at du ser logger som:
+     ```text
+     VolumeKeyEvent -> Key: KEYCODE_VOLUME_UP (24) | Action: ACTION_DOWN | Repeat: 0 | StreamMusic: 5/15 (min: 0) | MusicActive: false | Consumed: false
+     ```
+   - Standard Android-volumpanel vises som normalt.
+2. **Aktiv avskjæring / Intercept (Consume = ON):**
+   - Slå PÅ bryteren *"Consume Volume Key Events (return true)"* i appen.
+   - Trykk på volumknappene.
+   - Verifiser i logcat at `Consumed: true`. Androids standard volumpanel skal **ikke** dukke opp, og standard volum skal **ikke** endres av systemet.
+3. **Syntetiske tastetrykk via ADB:**
+   ```bash
+   adb shell input keyevent 24  # Volum OPP
+   adb shell input keyevent 25  # Volum NED
+   ```
+
