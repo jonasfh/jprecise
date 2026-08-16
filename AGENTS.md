@@ -17,9 +17,10 @@ This document is the canonical entry point and rulebook for AI coding assistants
   - When actual code files are modified, run `./gradlew assembleDebug` (and unit tests if applicable) before creating a commit.
   - Verification builds/tests can be skipped if changes only affect non-code files (e.g., documentation, markdown files, etc.).
   - Fix any build warnings, compile errors, or lint failures discovered during verification immediately before committing.
-- **Atomic and Relevant Commits:**
+- **Atomic and Relevant Commits & Message Format:**
   - Stage only relevant modified/new files (`git add <files>`).
   - Write concise, descriptive commit messages describing the *what* and *why*.
+  - **Mandatory Issue Prefix:** When a commit refers to a GitHub issue, the commit message **MUST always start with `(#<issue-nr>)`**, e.g., `(#1) Volume key interception test ...` or `(#4) Clarify commit message format in AGENTS.md`.
 - **Pull Request Creation:**
   - Whenever a feature branch is pushed to GitHub, create a Pull Request (PR) targeting `main` with a clear description linking back to the relevant issue.
   - The PR remains open until the developer explicitly requests it to be merged/rebased, or performs the merge manually.
