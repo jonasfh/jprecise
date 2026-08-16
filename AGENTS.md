@@ -13,8 +13,9 @@ This document is the canonical entry point and rulebook for AI coding assistants
   - Create and switch to a dedicated feature branch named `<issuenr>-<description>`, e.g., `12-volum-slider-ui`.
   - Standard practice is 1 branch per issue (multiple issues can be addressed in the same branch if closely related or needed).
 - **Commit Upon Completion:** When a coherent task, fix, or feature is completed and verified, the AI agent **MUST proactively create a Git commit**. Do not leave working, verified changes uncommitted unless explicitly instructed by the user.
-- **Verification Before Commit:** Every commit must be verified:
-  - Run `./gradlew assembleDebug` (and unit tests if applicable) before creating a commit.
+- **Verification Before Commit:**
+  - When actual code files are modified, run `./gradlew assembleDebug` (and unit tests if applicable) before creating a commit.
+  - Verification builds/tests can be skipped if changes only affect non-code files (e.g., documentation, markdown files, etc.).
   - Fix any build warnings, compile errors, or lint failures discovered during verification immediately before committing.
 - **Atomic and Relevant Commits:**
   - Stage only relevant modified/new files (`git add <files>`).
