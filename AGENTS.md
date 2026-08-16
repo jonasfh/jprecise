@@ -20,6 +20,10 @@ This document is the canonical entry point and rulebook for AI coding assistants
 - **Atomic and Relevant Commits:**
   - Stage only relevant modified/new files (`git add <files>`).
   - Write concise, descriptive commit messages describing the *what* and *why*.
+- **Pull Request Creation:**
+  - Whenever a feature branch is pushed to GitHub, create a Pull Request (PR) targeting `main` with a clear description linking back to the relevant issue.
+  - The PR remains open until the developer explicitly requests it to be merged/rebased, or performs the merge manually.
+  - **No Merge on Failing CI:** Never merge or rebase a PR if GitHub Actions or CI checks have failed.
 - **Devcontainer Environment:** All builds, tests, and CLI operations must run inside the devcontainer.
 
 ---
