@@ -9,15 +9,25 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.widget.Button;
+import android.widget.RadioGroup;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SubStepVolumeController.OnVolumeChangedListener {
 
+    private TextView tvFineVolumeLevel;
+    private TextView tvFineVolumeDetails;
+    private SeekBar seekbarFineVolume;
+    private RadioGroup rgStepSize;
+    private Button btnToggleTone;
     private TextView tvServiceStatus;
     private TextView tvAudioInfo;
     private SwitchMaterial switchConsumeKeys;
+
+    private SubStepVolumeController volumeController;
+    private AudioBenchmarkFixture audioFixture;
     private AudioManager audioManager;
     private SharedPreferences preferences;
 
@@ -26,38 +36,136 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        volumeController = SubStepVolumeController.getInstance(this);
+        audioFixture = new AudioBenchmarkFixture();
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         preferences = getSharedPreferences(VolumeAccessibilityService.PREFS_NAME, Context.MODE_PRIVATE);
 
+        initViews();
+        setupListeners();
+    }
+
+    private void initViews() {
+        tvFineVolumeLevel = findViewById(R.id.tv_fine_volume_level);
+        tvFineVolumeDetails = findViewById(R.id.tv_fine_volume_details);
+        seekbarFineVolume = findViewById(R.id.seekbar_fine_volume);
+        rgStepSize = findViewById(R.id.rg_step_size);
+        btnToggleTone = findViewById(R.id.btn_toggle_tone);
         tvServiceStatus = findViewById(R.id.tv_service_status);
         tvAudioInfo = findViewById(R.id.tv_audio_info);
         switchConsumeKeys = findViewById(R.id.switch_consume_keys);
-        Button btnOpenAccessibility = findViewById(R.id.btn_open_accessibility);
-        Button btnRefreshVolume = findViewById(R.id.btn_refresh_volume);
 
-        btnOpenAccessibility.setOnClickListener(v -> {
-            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-            startActivity(intent);
-        });
+        // Initial values
+        float currentLevel = volumeController.getCurrentLevel();
+        updateVolumeDisplay(currentLevel,
+                SubStepVolumeController.calculateBaseStreamIndex(currentLevel),
+                SubStepVolumeController.calculateAttenuationDb(currentLevel),
+                SubStepVolumeController.calculateFloatGain(currentLevel));
 
-        btnRefreshVolume.setOnClickListener(v -> updateAudioInfo());
+        seekbarFineVolume.setProgress((int) Math.round(currentLevel * 10));
 
         boolean currentConsumeSetting = preferences.getBoolean(
                 VolumeAccessibilityService.PREF_CONSUME_VOLUME_KEYS, false);
         switchConsumeKeys.setChecked(currentConsumeSetting);
+    }
+
+    private void setupListeners() {
+        findViewById(R.id.btn_step_down).setOnClickListener(v -> volumeController.stepDown());
+        findViewById(R.id.btn_step_up).setOnClickListener(v -> volumeController.stepUp());
+
+        findViewById(R.id.btn_open_accessibility).setOnClickListener(v -> {
+            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+            startActivity(intent);
+        });
 
         switchConsumeKeys.setOnCheckedChangeListener((buttonView, isChecked) -> {
             preferences.edit()
                     .putBoolean(VolumeAccessibilityService.PREF_CONSUME_VOLUME_KEYS, isChecked)
                     .apply();
         });
+
+        seekbarFineVolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    float level = progress / 10.0f;
+                    volumeController.setVolumeLevel(level);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        rgStepSize.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.rb_step_005) {
+                volumeController.setStepSize(0.05f);
+            } else if (checkedId == R.id.rb_step_010) {
+                volumeController.setStepSize(0.10f);
+            } else if (checkedId == R.id.rb_step_025) {
+                volumeController.setStepSize(0.25f);
+            } else if (checkedId == R.id.rb_step_100) {
+                volumeController.setStepSize(1.00f);
+            }
+        });
+
+        btnToggleTone.setOnClickListener(v -> toggleTestTone());
+    }
+
+    private void toggleTestTone() {
+        if (audioFixture.isPlaying()) {
+            audioFixture.stopTone();
+            btnToggleTone.setText("Start Test Tone (440 Hz)");
+        } else {
+            float gain = SubStepVolumeController.calculateFloatGain(volumeController.getCurrentLevel());
+            audioFixture.startTone(gain);
+            btnToggleTone.setText("Stop Test Tone");
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        volumeController.addListener(this);
         updateServiceStatus();
         updateAudioInfo();
+    }
+
+    @Override
+    protected void onPause() {
+        volumeController.removeListener(this);
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (audioFixture != null) {
+            audioFixture.stopTone();
+        }
+        super.onDestroy();
+    }
+
+    @Override
+    public void onVolumeChanged(float fineLevel, int baseStreamIndex, float attenuationDb, float floatGain) {
+        runOnUiThread(() -> {
+            updateVolumeDisplay(fineLevel, baseStreamIndex, attenuationDb, floatGain);
+            seekbarFineVolume.setProgress((int) Math.round(fineLevel * 10));
+            if (audioFixture.isPlaying()) {
+                audioFixture.setGain(floatGain);
+            }
+            updateAudioInfo();
+        });
+    }
+
+    private void updateVolumeDisplay(float fineLevel, int baseStreamIndex, float attenuationDb, float floatGain) {
+        tvFineVolumeLevel.setText(String.format("Level: %.2f / 15.0", fineLevel));
+        tvFineVolumeDetails.setText(String.format(
+                "Attenuation: %.1f dB | PCM Gain: %.3f | Base Stream: %d",
+                attenuationDb, floatGain, baseStreamIndex
+        ));
     }
 
     private void updateServiceStatus() {
@@ -65,13 +173,13 @@ public class MainActivity extends AppCompatActivity {
         boolean isEnabledInSettings = isAccessibilityServiceEnabled(this, VolumeAccessibilityService.class);
 
         if (isRunning) {
-            tvServiceStatus.setText("Status: ACTIVE & CONNECTED\n(Receiving key events)");
+            tvServiceStatus.setText("Status: ACTIVE & INTERCEPTING");
             tvServiceStatus.setTextColor(0xFF2E7D32); // Green
         } else if (isEnabledInSettings) {
-            tvServiceStatus.setText("Status: ENABLED in Settings (waiting for connection)");
+            tvServiceStatus.setText("Status: ENABLED in Settings (connecting...)");
             tvServiceStatus.setTextColor(0xFFF57F17); // Amber
         } else {
-            tvServiceStatus.setText("Status: DISABLED\n(Please enable in Accessibility Settings)");
+            tvServiceStatus.setText("Status: DISABLED (Enable in Accessibility Settings)");
             tvServiceStatus.setTextColor(0xFFC62828); // Red
         }
     }
@@ -89,11 +197,10 @@ public class MainActivity extends AppCompatActivity {
             minVol = audioManager.getStreamMinVolume(AudioManager.STREAM_MUSIC);
         }
         boolean musicActive = audioManager.isMusicActive();
-        int mode = audioManager.getMode();
 
         String info = String.format(
-                "STREAM_MUSIC Volume: %d\nMin: %d | Max: %d\nisMusicActive: %b\nAudio Mode: %d",
-                currentVol, minVol, maxVol, musicActive, mode
+                "STREAM_MUSIC Index: %d / %d (Min: %d) | isMusicActive: %b",
+                currentVol, maxVol, minVol, musicActive
         );
         tvAudioInfo.setText(info);
     }

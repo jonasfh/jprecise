@@ -86,6 +86,16 @@ public class VolumeAccessibilityService extends AccessibilityService {
 
             if (shouldConsume) {
                 Log.d(TAG, "Consuming volume key event: " + VolumeEventFormatter.getKeyCodeName(keyCode));
+
+                // Process volume adjustment on ACTION_DOWN
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    SubStepVolumeController controller = SubStepVolumeController.getInstance(this);
+                    if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+                        controller.stepUp();
+                    } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+                        controller.stepDown();
+                    }
+                }
                 return true;
             }
         }

@@ -101,8 +101,33 @@ Antigravity and other agent runtimes discover customizations hierarchically in t
 - **What We Can Intercept (Consume):**
   - Returning `true` from `onKeyEvent()` consumes the key event, preventing Android from displaying the default volume HUD and preventing default volume step increments/decrements.
   - Returning `false` allows passive observation without blocking system behavior.
-- **Android Platform Limitations & Observations:**
-  - **Permission Requirement:** Accessibility services cannot be granted silently via standard app permissions; the user must explicitly enable the service in Android Accessibility Settings (or via `adb shell settings put secure enabled_accessibility_services ...` during development).
-  - **Screen-Off Behavior:** Accessibility key event filtering is generally throttled or inactive when the screen is locked/off depending on OEM battery optimization and secure lock screen policies.
-  - **Motorola / Android 16 Behavior:** Moto devices running modern Android (API 33+) may mark sideloaded apps as "Restricted Settings" (requiring tapping 3-dots -> "Allow restricted settings" in App Info before enabling accessibility).
+- **Motorola / Android 16 Behavior:** Moto devices running modern Android (API 33+) may mark sideloaded apps as "Restricted Settings" (requiring tapping 3-dots -> "Allow restricted settings" in App Info before enabling accessibility).
+
+---
+
+## 7. Low-Level Volume Resolution & Audio Architecture Findings (POC #2)
+
+- **Android Audio Stack Layer Breakdown:**
+  1. **App Layer (`AudioManager`):**
+     - Only accepts integer indices (`0, 1, ... 15` for `STREAM_MUSIC`).
+     - Standard Android provides no public API for fractional stream indices.
+  2. **Framework Layer (`AudioService` / `AudioSystem`):**
+     - Internally converts integer indices to decibel volume curves.
+     - Lower-level methods (`AudioSystem.setStreamVolumeIndexAS`) are `@hide` and blocked by Android SELinux and hidden API enforcement for regular third-party apps.
+  3. **Native DSP / Effects Layer (`android.media.audiofx`):**
+     - Publicly accessible to regular applications via Android SDK.
+     - `Equalizer` / `DynamicsProcessing` attached to audio session (Session 0 for output mix where supported, or application sessions).
+     - Allows decibel adjustments in millibels (1 dB = 100 mB), providing continuous attenuation control.
+  4. **Native PCM Mixer (`AudioFlinger` / `AudioTrack`):**
+     - Operates on float gain scalars (`0.0f` to `1.0f`), providing 32-bit floating point output resolution.
+- **The JPrecise Hybrid Multi-Resolution Engine:**
+  - **The Low-Volume Problem:** On stock Android, the jump from level 0 (mute) to level 1 (audible) is jarringly large in quiet environments.
+  - **The Solution:**
+    - Hold the underlying `AudioManager` stream index at `1` (the lowest audible base).
+    - Divide the range between 0 and 1 into **10 fine sub-steps (0.1, 0.2, ... 1.0)**.
+    - Apply software attenuation from `-24.0 dB` (step 0.1) to `0.0 dB` (step 1.0) via `Equalizer` and float PCM gain.
+    - Route intercepted physical volume keys to increment/decrement sub-steps (e.g. 0.05, 0.10, 0.25).
+- **Physical Output Verification:**
+  - `AudioBenchmarkFixture` generates a pure 440 Hz tone directly verifying that consecutive JPrecise positions produce distinct, measurable, and audible attenuation levels.
+
 

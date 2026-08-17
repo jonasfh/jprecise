@@ -17,8 +17,8 @@
             android:id="@+id/tv_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="JPrecise POC"
-            android:textSize="24sp"
+            android:text="JPrecise Volume Engine"
+            android:textSize="22sp"
             android:textStyle="bold"
             android:textColor="@android:color/black" />
 
@@ -26,16 +26,16 @@
             android:id="@+id/tv_subtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="AccessibilityService Volume Key Interception Spike"
-            android:textSize="14sp"
+            android:layout_marginTop="2dp"
+            android:text="High-Resolution Sub-Step Volume Controller"
+            android:textSize="13sp"
             android:textColor="@android:color/darker_gray" />
 
-        <!-- Service Status Card -->
+        <!-- Sub-Step Volume Control Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="16dp"
             app:cardCornerRadius="12dp"
             app:cardElevation="3dp"
             app:contentPadding="16dp">
@@ -48,7 +48,166 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Accessibility Service Status"
+                    android:text="Fine-Grained Volume State"
+                    android:textStyle="bold"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/tv_fine_volume_level"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Level: 1.00 / 15.0"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="#1976D2" />
+
+                <TextView
+                    android:id="@+id/tv_fine_volume_details"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Attenuation: 0.0 dB | Gain: 1.000 | Base Stream: 1"
+                    android:fontFamily="monospace"
+                    android:textSize="12sp" />
+
+                <SeekBar
+                    android:id="@+id/seekbar_fine_volume"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:max="150"
+                    android:progress="10" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp"
+                    android:weightSum="2">
+
+                    <Button
+                        android:id="@+id/btn_step_down"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:text="Step - (Down)" />
+
+                    <Button
+                        android:id="@+id/btn_step_up"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:text="Step + (Up)" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Step Size:"
+                    android:textStyle="bold"
+                    android:textSize="13sp" />
+
+                <RadioGroup
+                    android:id="@+id/rg_step_size"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
+
+                    <RadioButton
+                        android:id="@+id/rb_step_005"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0.05"
+                        android:textSize="12sp" />
+
+                    <RadioButton
+                        android:id="@+id/rb_step_010"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0.10"
+                        android:checked="true"
+                        android:textSize="12sp" />
+
+                    <RadioButton
+                        android:id="@+id/rb_step_025"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0.25"
+                        android:textSize="12sp" />
+
+                    <RadioButton
+                        android:id="@+id/rb_step_100"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1.00"
+                        android:textSize="12sp" />
+                </RadioGroup>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Test Tone Generator Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="3dp"
+            app:contentPadding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Audio Test Tone (Benchmark)"
+                    android:textStyle="bold"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Play a 440 Hz test tone to directly hear and verify micro-step volume changes on speakers / Bluetooth."
+                    android:textSize="12sp"
+                    android:textColor="@android:color/darker_gray" />
+
+                <Button
+                    android:id="@+id/btn_toggle_tone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Start Test Tone (440 Hz)" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Service Status Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="3dp"
+            app:contentPadding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Accessibility Service &amp; Key Interception"
                     android:textStyle="bold"
                     android:textSize="16sp" />
 
@@ -56,64 +215,33 @@
                     android:id="@+id/tv_service_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="6dp"
                     android:text="Status: Checking..."
-                    android:textSize="15sp" />
-
-                <Button
-                    android:id="@+id/btn_open_accessibility"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="Open Accessibility Settings" />
-
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Key Interception Config Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="3dp"
-            app:contentPadding="16dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Key Event Consumption"
-                    android:textStyle="bold"
-                    android:textSize="16sp" />
+                    android:textSize="13sp" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switch_consume_keys"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Consume Volume Key Events (return true)" />
+                    android:text="Route Hardware Volume Keys to Sub-Steps" />
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <Button
+                    android:id="@+id/btn_open_accessibility"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="When ON: onKeyEvent returns true to intercept/block default system volume behavior. When OFF: returns false to observe only."
-                    android:textSize="12sp"
-                    android:textColor="@android:color/darker_gray" />
+                    android:layout_marginTop="8dp"
+                    android:text="Open Accessibility Settings" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Current Volume State Card -->
+        <!-- Stream & Live Info Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp"
             app:cardCornerRadius="12dp"
             app:cardElevation="3dp"
             app:contentPadding="16dp">
@@ -126,7 +254,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="AudioManager Stream State"
+                    android:text="AudioManager Live Status"
                     android:textStyle="bold"
                     android:textSize="16sp" />
 
@@ -134,46 +262,8 @@
                     android:id="@+id/tv_audio_info"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="6dp"
                     android:text="STREAM_MUSIC: Loading..."
-                    android:textSize="14sp" />
-
-                <Button
-                    android:id="@+id/btn_refresh_volume"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Refresh Volume" />
-
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Live Logcat Tip Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="3dp"
-            app:contentPadding="16dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Live ADB Verification"
-                    android:textStyle="bold"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="To watch key interception logs in real time:\n\nadb logcat -s JPrecise:V\n\nTo simulate key presses:\nadb shell input keyevent 24  # Vol UP\nadb shell input keyevent 25  # Vol DOWN"
                     android:fontFamily="monospace"
                     android:textSize="12sp" />
 
