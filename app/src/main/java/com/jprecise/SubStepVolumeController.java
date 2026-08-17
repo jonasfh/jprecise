@@ -13,11 +13,17 @@ public class SubStepVolumeController {
     public static final String PREF_FINE_VOLUME_LEVEL = "fine_volume_level";
     public static final String PREF_FINE_STEP_SIZE = "fine_step_size";
     public static final String PREF_ENABLE_SUB_STEPS = "enable_sub_steps";
+    public static final String PREF_CURVE_MODE = "curve_mode";
 
-    public static final float MIN_VOLUME = 0.0f;
-    public static final float MAX_VOLUME = 15.0f;
-    public static final float DEFAULT_STEP_SIZE = 0.1f; // 10 micro-steps between 0 and 1
-    public static final float LOW_LEVEL_MAX_ATTENUATION_DB = -24.0f; // dB at step 0.1
+    public enum CurveMode {
+        VARIABLE, // Dynamic: 0.05 (<0.30), 0.10 (<0.90), 1.00 (>=0.90)
+        FIXED     // Fixed step size
+    }
+
+    public static final float MIN_VOLUME = VariableStepVolumeCurve.MIN_VOLUME;
+    public static final float MAX_VOLUME = VariableStepVolumeCurve.MAX_VOLUME;
+    public static final float DEFAULT_STEP_SIZE = 0.1f;
+    public static final float LOW_LEVEL_MAX_ATTENUATION_DB = -24.0f;
 
     private static volatile SubStepVolumeController instance;
 
@@ -29,6 +35,7 @@ public class SubStepVolumeController {
     private float currentLevel;
     private float stepSize;
     private boolean subStepsEnabled;
+    private CurveMode curveMode;
     private Equalizer globalEqualizer;
 
     public interface OnVolumeChangedListener {
@@ -43,6 +50,12 @@ public class SubStepVolumeController {
         this.currentLevel = preferences.getFloat(PREF_FINE_VOLUME_LEVEL, 1.0f);
         this.stepSize = preferences.getFloat(PREF_FINE_STEP_SIZE, DEFAULT_STEP_SIZE);
         this.subStepsEnabled = preferences.getBoolean(PREF_ENABLE_SUB_STEPS, true);
+        String savedMode = preferences.getString(PREF_CURVE_MODE, CurveMode.VARIABLE.name());
+        try {
+            this.curveMode = CurveMode.valueOf(savedMode);
+        } catch (Exception e) {
+            this.curveMode = CurveMode.VARIABLE;
+        }
 
         initEqualizer();
     }
@@ -106,11 +119,19 @@ public class SubStepVolumeController {
     }
 
     public synchronized void stepUp() {
-        setVolumeLevel(currentLevel + stepSize);
+        if (curveMode == CurveMode.VARIABLE) {
+            setVolumeLevel(VariableStepVolumeCurve.calculateStepUp(currentLevel));
+        } else {
+            setVolumeLevel(currentLevel + stepSize);
+        }
     }
 
     public synchronized void stepDown() {
-        setVolumeLevel(currentLevel - stepSize);
+        if (curveMode == CurveMode.VARIABLE) {
+            setVolumeLevel(VariableStepVolumeCurve.calculateStepDown(currentLevel));
+        } else {
+            setVolumeLevel(currentLevel - stepSize);
+        }
     }
 
     public float getCurrentLevel() {
@@ -121,9 +142,25 @@ public class SubStepVolumeController {
         return stepSize;
     }
 
+    public float getCurrentStepSize() {
+        if (curveMode == CurveMode.VARIABLE) {
+            return VariableStepVolumeCurve.getStepSizeAt(currentLevel);
+        }
+        return stepSize;
+    }
+
     public void setStepSize(float stepSize) {
         this.stepSize = Math.max(0.01f, Math.min(1.0f, stepSize));
         preferences.edit().putFloat(PREF_FINE_STEP_SIZE, this.stepSize).apply();
+    }
+
+    public CurveMode getCurveMode() {
+        return curveMode;
+    }
+
+    public void setCurveMode(CurveMode curveMode) {
+        this.curveMode = curveMode;
+        preferences.edit().putString(PREF_CURVE_MODE, curveMode.name()).apply();
     }
 
     public boolean isSubStepsEnabled() {

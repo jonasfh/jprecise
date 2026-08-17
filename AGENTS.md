@@ -17,10 +17,11 @@ This document is the canonical entry point and rulebook for AI coding assistants
   - Upon completing a spike, investigation, or feature, update `AGENTS.md` (and `README.md` where applicable) with important technical findings, architecture decisions, and platform limitations.
   - Post a completion summary comment on the GitHub issue detailing what was implemented and verified.
 - **Commit Upon Completion:** When a coherent task, fix, or feature is completed and verified, the AI agent **MUST proactively create a Git commit**. Do not leave working, verified changes uncommitted unless explicitly instructed by the user.
-- **Verification Before Commit:**
-  - When actual code files are modified, run `./gradlew test assembleDebug` before creating a commit.
+- **Verification Before Commit (Local Testing Only):**
+  - When actual code files are modified, run `./gradlew test assembleDebug` locally before creating a commit.
   - Verification builds/tests can be skipped if changes only affect non-code files (e.g., documentation, markdown files, etc.).
   - Fix any build warnings, compile errors, or lint failures discovered during verification immediately before committing.
+  - **Do NOT poll or wait for remote GitHub Actions CI:** Run all tests locally. After pushing and opening a PR, report back immediately to the user without polling remote CI status (the developer checks CI before merge).
 - **Atomic and Relevant Commits & Message Format:**
   - Stage only relevant modified/new files (`git add <files>`).
   - Write concise, descriptive commit messages describing the *what* and *why*.

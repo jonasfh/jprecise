@@ -203,4 +203,30 @@ Denne POC-en demonstrerer **finkornet volumkontroll med vesentlig høyere opplø
    SubStepVolume -> Level: 0.30 / 15.0 | Base STREAM_MUSIC: 1 | Attenuation: -16.8 dB | Gain: 0.300
    ```
 
+---
+
+## 8. Teste variabel volumkurve (Issue #10 - Dynamic Step Size)
+
+JPrecise tilpasser stegstørrelsen automatisk basert på nåværende volumnivå for optimal oppløsning:
+
+| Volumnivå | Stegstørrelse | Formål |
+| :--- | :--- | :--- |
+| **`0.00` – `< 0.30`** | `0.05` | Ultra-finkornet innsovningsvolum |
+| **`0.30` – `< 0.90`** | `0.10` | Finkornet lavt lyttevolum |
+| **`0.90` – `15.00`** | `1.00` | Standard normalt volumtrinn |
+
+### Testprosedyre:
+1. Installer appen: `./gradlew installDebug`.
+2. Åpne appen og verifiser at **Variable Curve** er valgt under *Step Mode*.
+3. Start testtonen (**Start Test Tone**).
+4. Trykk på **Step +** / fysisk volum OPP fra `0.00`:
+   - `0.00 → 0.05 → 0.10 → 0.15 → 0.20 → 0.25 → 0.30` (0.05-steg)
+   - `0.30 → 0.40 → 0.50 → 0.60 → 0.70 → 0.80 → 0.90` (0.10-steg)
+   - `0.90 → 1.90 → 2.90 → ... → 14.90 → 15.00` (1.00-steg)
+5. Trykk på **Step -** / fysisk volum NED fra `15.00`:
+   - `15.00 → 14.90 → 13.90 → ... → 1.90 → 0.90` (1.00-steg)
+   - `0.90 → 0.80 → 0.70 → ... → 0.40 → 0.30` (0.10-steg)
+   - `0.30 → 0.25 → 0.20 → ... → 0.05 → 0.00` (0.05-steg til mute)
+
+
 
