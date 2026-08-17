@@ -8,7 +8,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -19,7 +21,10 @@ public class MainActivity extends AppCompatActivity implements SubStepVolumeCont
 
     private TextView tvFineVolumeLevel;
     private TextView tvFineVolumeDetails;
+    private TextView tvActiveStepSize;
     private SeekBar seekbarFineVolume;
+    private RadioGroup rgCurveMode;
+    private LinearLayout layoutFixedSteps;
     private RadioGroup rgStepSize;
     private Button btnToggleTone;
     private TextView tvServiceStatus;
@@ -48,14 +53,16 @@ public class MainActivity extends AppCompatActivity implements SubStepVolumeCont
     private void initViews() {
         tvFineVolumeLevel = findViewById(R.id.tv_fine_volume_level);
         tvFineVolumeDetails = findViewById(R.id.tv_fine_volume_details);
+        tvActiveStepSize = findViewById(R.id.tv_active_step_size);
         seekbarFineVolume = findViewById(R.id.seekbar_fine_volume);
+        rgCurveMode = findViewById(R.id.rg_curve_mode);
+        layoutFixedSteps = findViewById(R.id.layout_fixed_steps);
         rgStepSize = findViewById(R.id.rg_step_size);
         btnToggleTone = findViewById(R.id.btn_toggle_tone);
         tvServiceStatus = findViewById(R.id.tv_service_status);
         tvAudioInfo = findViewById(R.id.tv_audio_info);
         switchConsumeKeys = findViewById(R.id.switch_consume_keys);
 
-        // Initial values
         float currentLevel = volumeController.getCurrentLevel();
         updateVolumeDisplay(currentLevel,
                 SubStepVolumeController.calculateBaseStreamIndex(currentLevel),
@@ -67,6 +74,15 @@ public class MainActivity extends AppCompatActivity implements SubStepVolumeCont
         boolean currentConsumeSetting = preferences.getBoolean(
                 VolumeAccessibilityService.PREF_CONSUME_VOLUME_KEYS, false);
         switchConsumeKeys.setChecked(currentConsumeSetting);
+
+        // Set curve mode radio buttons
+        if (volumeController.getCurveMode() == SubStepVolumeController.CurveMode.VARIABLE) {
+            rgCurveMode.check(R.id.rb_mode_variable);
+            layoutFixedSteps.setVisibility(View.GONE);
+        } else {
+            rgCurveMode.check(R.id.rb_mode_fixed);
+            layoutFixedSteps.setVisibility(View.VISIBLE);
+        }
     }
 
     private void setupListeners() {
@@ -100,6 +116,17 @@ public class MainActivity extends AppCompatActivity implements SubStepVolumeCont
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
+        rgCurveMode.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.rb_mode_variable) {
+                volumeController.setCurveMode(SubStepVolumeController.CurveMode.VARIABLE);
+                layoutFixedSteps.setVisibility(View.GONE);
+            } else {
+                volumeController.setCurveMode(SubStepVolumeController.CurveMode.FIXED);
+                layoutFixedSteps.setVisibility(View.VISIBLE);
+            }
+            updateStepSizeDisplay(volumeController.getCurrentLevel());
+        });
+
         rgStepSize.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.rb_step_005) {
                 volumeController.setStepSize(0.05f);
@@ -110,6 +137,7 @@ public class MainActivity extends AppCompatActivity implements SubStepVolumeCont
             } else if (checkedId == R.id.rb_step_100) {
                 volumeController.setStepSize(1.00f);
             }
+            updateStepSizeDisplay(volumeController.getCurrentLevel());
         });
 
         btnToggleTone.setOnClickListener(v -> toggleTestTone());
@@ -166,6 +194,26 @@ public class MainActivity extends AppCompatActivity implements SubStepVolumeCont
                 "Attenuation: %.1f dB | PCM Gain: %.3f | Base Stream: %d",
                 attenuationDb, floatGain, baseStreamIndex
         ));
+        updateStepSizeDisplay(fineLevel);
+    }
+
+    private void updateStepSizeDisplay(float level) {
+        if (volumeController.getCurveMode() == SubStepVolumeController.CurveMode.VARIABLE) {
+            float step = VariableStepVolumeCurve.getStepSizeAt(level);
+            String rangeLabel;
+            if (level < 0.30f) {
+                rangeLabel = "Low sleep range (<0.30)";
+            } else if (level < 0.90f) {
+                rangeLabel = "Medium quiet range (<0.90)";
+            } else {
+                rangeLabel = "Standard range (>=0.90)";
+            }
+            tvActiveStepSize.setText(String.format("Active Step Size: %.2f (%s)", step, rangeLabel));
+            tvActiveStepSize.setTextColor(0xFF2E7D32); // Green
+        } else {
+            tvActiveStepSize.setText(String.format("Active Step Size: %.2f (Fixed Mode)", volumeController.getStepSize()));
+            tvActiveStepSize.setTextColor(0xFF1565C0); // Blue
+        }
     }
 
     private void updateServiceStatus() {
