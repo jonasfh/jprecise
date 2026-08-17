@@ -7,20 +7,24 @@ This document is the canonical entry point and rulebook for AI coding assistants
 ## 1. Mandatory Agent Workflow, GitHub Issues & Git Policy
 
 - **GitHub Issue First:** For all non-trivial changes, create an issue in GitHub (via GitHub MCP / CLI) describing the objective and scope before starting work.
+- **Implementation Plan in Issue Comments:** Before starting code implementation on an issue, the agent **MUST create a structured implementation plan and post it as a comment** directly on the GitHub issue.
 - **Branching Workflow:**
   - Never work directly on `main` for non-trivial tasks.
   - Before creating a branch, ensure `main` is up-to-date with `origin` (`git fetch origin` / fast-forward pull).
-  - Create and switch to a dedicated feature branch named `<issuenr>-<description>`, e.g., `12-volum-slider-ui`.
+  - Create and switch to a dedicated feature branch named `<issuenr>-<description>`, e.g., `8-low-level-volume-resolution`.
   - Standard practice is 1 branch per issue (multiple issues can be addressed in the same branch if closely related or needed).
+- **Documenting Findings & Outcomes:**
+  - Upon completing a spike, investigation, or feature, update `AGENTS.md` (and `README.md` where applicable) with important technical findings, architecture decisions, and platform limitations.
+  - Post a completion summary comment on the GitHub issue detailing what was implemented and verified.
 - **Commit Upon Completion:** When a coherent task, fix, or feature is completed and verified, the AI agent **MUST proactively create a Git commit**. Do not leave working, verified changes uncommitted unless explicitly instructed by the user.
 - **Verification Before Commit:**
-  - When actual code files are modified, run `./gradlew assembleDebug` (and unit tests if applicable) before creating a commit.
+  - When actual code files are modified, run `./gradlew test assembleDebug` before creating a commit.
   - Verification builds/tests can be skipped if changes only affect non-code files (e.g., documentation, markdown files, etc.).
   - Fix any build warnings, compile errors, or lint failures discovered during verification immediately before committing.
 - **Atomic and Relevant Commits & Message Format:**
   - Stage only relevant modified/new files (`git add <files>`).
   - Write concise, descriptive commit messages describing the *what* and *why*.
-  - **Mandatory Issue Prefix:** When a commit refers to a GitHub issue, the commit message **MUST always start with `(#<issue-nr>)`**, e.g., `(#1) Volume key interception test ...` or `(#4) Clarify commit message format in AGENTS.md`.
+  - **Mandatory Issue Prefix:** When a commit refers to a GitHub issue, the commit message **MUST always start with `(#<issue-nr>)`**, e.g., `(#8) Increase volume resolution at low level` or `(#4) Clarify commit message format in AGENTS.md`.
 - **Pull Request Creation:**
   - Whenever a feature branch is pushed to GitHub, create a Pull Request (PR) targeting `main` with a clear description linking back to the relevant issue.
   - The PR remains open until the developer explicitly requests it to be merged/rebased, or performs the merge manually.
