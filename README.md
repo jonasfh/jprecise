@@ -169,3 +169,38 @@ adb logcat -s JPrecise:V AndroidRuntime:E
    adb shell input keyevent 25  # Volum NED
    ```
 
+---
+
+## 7. Teste høyoppløselig volumkontroll (POC #2 - Sub-Step Volume Engine)
+
+Denne POC-en demonstrerer **finkornet volumkontroll med vesentlig høyere oppløsning** enn standard Android 1/15-trinn, spesielt på lavt lyttevolum (mellom 0 og 1).
+
+### 1. Bygg og installer på telefonen (via Wi-Fi / USB)
+```bash
+./gradlew installDebug
+```
+
+### 2. Testprosedyre på telefonen (Motorola Edge 50 Pro)
+
+1. **Start test-lyd (Audio Benchmark):**
+   - Trykk på **Start Test Tone (440 Hz)** i appen.
+   - En ren, jevn sinustone spilles av via `AudioTrack`.
+2. **Test finkornet demping med slider:**
+   - Dra slideren sakte i det lave området mellom `0.00` og `1.00`.
+   - Legg merke til at hvert deltrinn (f.eks. `0.10`, `0.20`, `0.30` ... `1.00`) gir en jevn, gradvis og målbar volumendring (demping fra `-24.0 dB` opp til `0.0 dB`).
+   - Standard Android hopper direkte fra stillhet (0) til et relativt høyt trinn (1), mens JPrecise gir 10–20 hørbare mikro-trinn i dette intervallet!
+3. **Test fysiske volumknapper:**
+   - Slå PÅ bryteren *"Route Hardware Volume Keys to Sub-Steps"*.
+   - Velg ønsket trinnstørrelse (f.eks. `0.10` for 10 mikrosteg, eller `0.05` for 20 mikrosteg).
+   - Trykk på de fysiske volumknappene på telefonen.
+   - Verifiser at volumet endres med det valgte finkornede deltrinnet for hvert knappetrykk, mens systemets standard volumpanel forblir skjult.
+4. **Live logcat-overvåking:**
+   ```bash
+   adb logcat -s JPrecise:V
+   ```
+   Logger viser sanntidsverdiene:
+   ```text
+   SubStepVolume -> Level: 0.30 / 15.0 | Base STREAM_MUSIC: 1 | Attenuation: -16.8 dB | Gain: 0.300
+   ```
+
+
